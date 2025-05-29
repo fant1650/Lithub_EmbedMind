@@ -20,6 +20,6 @@ pip install transformers==4.41.0 -f https://pypi.tuna.tsinghua.edu.cn/simple  --
 ```bash
 pip install datasets==3.5.0 -f https://pypi.tuna.tsinghua.edu.cn/simple  --trusted-host files.pythonhosted.org --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host pypi.python.org
 ```
-or you can use requirements.txt in the root to solve any environmental problems!
+### or you can use requirements.txt in the root to solve any environmental problems!
 
 
