@@ -10,6 +10,13 @@ from embedding.Bert import Bert_Embedding
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
+import os
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+from api.api import post
 
 # 初始化模型与数据
 model = Bert_Embedding()
@@ -118,14 +125,28 @@ app.layout = html.Div([
             placeholder='请输入论文摘要...',
             style={**styles['input'], 'color': '#333'}
         ),
-
+        
         html.Div([
             html.Button('搜索相似论文', id='search-button', n_clicks=0,
                         style={**styles['button'], **styles['search_button']}),
             html.Button('可视化聚类', id='visualize-button', n_clicks=0,
                         style={**styles['button'], **styles['visualize_button']})
         ]),
-
+        
+        # 关键词展示区
+        html.Div(id='keywords-output', style={
+            'marginTop': '10px',
+            'padding': '10px',
+            'backgroundColor': '#f0f8ff',  
+            # 'borderRadius': '8px',
+            'minHeight': '30px',
+            'color': '#050',               
+            'fontSize': '16px',
+            # 'fontWeight': 'bold',          # 字体加粗
+            # 'border': '1px solid #ccc'    # 可选：加上边框，看起来更清晰
+        }),
+    
+        
         html.Hr(style={'borderColor': '#ccc'}),
 
         html.Div(id='results-output', style=styles['results_box']),
@@ -155,7 +176,7 @@ app.layout = html.Div([
 def search_papers(n_clicks, query_text):
     if not query_text or n_clicks == 0:
         return ""
-    query_vec = model.encode([query_text])
+    query_vec = model.encode([post(query_text)])
     similarities = cosine_similarity(query_vec, embeddings)[0]
     top_indices = np.argsort(similarities)[::-1][:5]
     results = [(titles[i], similarities[i]) for i in top_indices]
@@ -163,6 +184,21 @@ def search_papers(n_clicks, query_text):
     return result_str
 
 colors = px.colors.qualitative.Set2
+
+
+@app.callback(
+    Output('keywords-output', 'children'),
+    Input('query-input', 'value')
+)
+def show_keywords(query_text):
+    if not query_text:
+        return ""
+    try:
+        keywords_str = post(query_text)  # 替换为你自己的关键词提取函数
+        return f"key words：{keywords_str}"
+    except Exception as e:
+        return f"关键词提取出错：{str(e)}"
+    
 # 回调函数 - 聚类可视化
 @app.callback(
     Output('tsne-graph', 'figure'),
@@ -174,12 +210,12 @@ def visualize_clusters(n_clicks, query_text):
         return go.Figure()
 
     try:
-        query_vec = model.encode([query_text])
+        query_vec = model.encode([post(query_text)])
         combined = np.vstack((query_vec, embeddings))
         tsne = TSNE(n_components=3, random_state=42)
         reduced = tsne.fit_transform(combined)
 
-        # 自动选择最佳聚类数（示例范围：2~10）
+        # 自动选择最佳聚类数
         max_k = min(10, len(reduced) - 1)  # 避免 k >= 样本数
         best_k = 3  # 默认值
         scores = []
