@@ -1,6 +1,10 @@
 # Lithub_EmbedMind
 ## 📑What is Lithub_EmbedMind?
 Lithub_EmbedMind is a project aimed at helping people retrieve related papers.We use Embedding to vectorize the papers and calculate the similarity between them.Users can get started easily because we provide clear data visualization.  
+## ✨Display effect
+### 1.similar papers
+### 2.visualization
+
 ## 🔍How to use this project?
 You have to make sure the environment of your python and the libraries.  
 1.We use python312 to run this project  
